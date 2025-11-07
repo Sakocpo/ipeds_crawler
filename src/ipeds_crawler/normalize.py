@@ -4,61 +4,6 @@ import re
 import pandas as pd
 from difflib import SequenceMatcher
 
-def chunk_data(flat: Sequence[Any]) -> list[list[Any]]:
-    chunks: list[list[Any]] = []
-    current: list[Any] = []
-
-    def looks_like_label(s: str) -> bool:
-        s = s.strip()
-        if not s:
-            return False
-        if s.upper() == "X":
-            return False
-        if s.lower() == "not applicable":
-            return False
-        return bool(s) and not re.match(r"^[\d\$,%.–—\-]+$", s)
-
-    def normalize_cell(x: Any) -> Any:
-        if not isinstance(x, str):
-            return x
-        s = x.strip()
-        if s == "":
-            return False
-        if s.upper() == "X":
-            return True
-        if s in {"-", "–", "—", "——"}:
-            return pd.NA
-        return x
-
-    for item in flat:
-        if isinstance(item, str) and looks_like_label(item):
-            if current:
-                chunks.append(current)
-            current = [item]
-        else:
-            current.append(normalize_cell(item))
-    if current:
-        chunks.append(current)
-    return chunks
-
-
-def chunk_list(lst: Sequence[Any], k: int) -> list[list[Any]]:
-    cleaned = [None if x in ("-", "--", "---") else x for x in lst]
-    return [cleaned[i : i + k] for i in range(0, len(cleaned), k)]
-
-
-def relabel_chunks(chunks: list[list[Any]], labels: Sequence[str]) -> list[list[Any]]:
-    if len(labels) != len(chunks):
-        raise ValueError("Number of labels must match number of chunks.")
-    for chunk, label in zip(chunks, labels):
-        chunk[0] = label
-    return chunks
-
-
-# ------------------------------
-# Normalization (numbers, %, $)
-# ------------------------------
-
 def normalize(data: Any) -> Any:
     def normalize_value(val: Any) -> Any:
         if isinstance(val, str):
@@ -214,9 +159,6 @@ def graph_to_df(rows: list[list[Any]], *, mode: str, uni: str | None = None) -> 
 
 
 def get_best_unitid(df: pd.DataFrame, name: str, threshold: float = 0.75) -> tuple[str, str, float] | None:
-    """
-    Fuzzy match by INSTNM (unchanged logic).
-    """
     if df.empty or not name:
         return None
 
@@ -226,7 +168,7 @@ def get_best_unitid(df: pd.DataFrame, name: str, threshold: float = 0.75) -> tup
 
     best = df.loc[df["sim"].idxmax()]
     if best["sim"] < threshold:
-        print(f"⚠️ Low confidence match ({best['sim']:.2f}) for '{name}' → '{best['INSTNM']}'")
+        print(f"Low confidence match ({best['sim']:.2f}) for '{name}' → '{best['INSTNM']}'")
         return None
     return str(best["UNITID"]), best["INSTNM"], float(best["sim"])
 
@@ -241,12 +183,6 @@ def label_dict(base: str, labels: list[str], values: list[Any], position: str = 
 
 
 def build_labeled_dict(*specs, position: str = "last") -> dict[str, Any]:
-    """
-    Each spec:
-      (base, labels, values, slc)
-      (base, labels, values, slc, position)
-    Mirrors your original function and behavior.
-    """
     out: dict[str, Any] = {}
 
     for spec in specs:

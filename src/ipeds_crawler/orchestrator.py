@@ -8,17 +8,18 @@ from .browser import browser_page
 from .ipeds_pages import goto_reported_data
 from .extractors import wait_for_all, get_text_data, get_box_data
 from .normalize import build_labeled_dict, normalize
-
+from ipeds_crawler.logging import setup_logging
 
 async def run_pipeline(input_df: pd.DataFrame, output_path: str, min_year: int = 2014, max_year: int = 2023) -> None:
     name_list = input_df["INSTNM"].tolist()
     id_list = input_df["UNITID"].tolist()
 
     async with browser_page() as page:
+        logger = setup_logging("INFO")
         for name, unit_id in zip(name_list, id_list):
             for year in range(max_year, min_year - 1, -1):
                 try:
-                    print(f"[bold]{name}[/bold] Year: {year}")
+                    logger.info(f"[bold]{name}[/bold] Year: {year}")
 
                     # ---------------------------
                     # INSTITUTIONAL PAGE (Survey 1) — Pricing
@@ -94,7 +95,7 @@ async def run_pipeline(input_df: pd.DataFrame, output_path: str, min_year: int =
                             else other_expenses_off_campus_family
                         )
                     else:
-                        print(f"[yellow][WARN][/yellow] pricing information table not found for {year}")
+                        logger.warning(f"[yellow][WARN][/yellow] pricing information table not found for {year}")
                         tuition_fee = None
                         book_and_supplies = None
                         food_housing_on_campus = None
@@ -149,7 +150,7 @@ async def run_pipeline(input_df: pd.DataFrame, output_path: str, min_year: int =
                                 act.pop(3)
                                 act.pop(6)
                     else:
-                        print(f"[yellow][WARN][/yellow] Admission & test score table not found for {year}")
+                        logger.warning(f"[yellow][WARN][/yellow] Admission & test score table not found for {year}")
                         num_applicant = []
                         percent_admitted = []
                         percent_admitted_enrolled = []
@@ -209,7 +210,7 @@ async def run_pipeline(input_df: pd.DataFrame, output_path: str, min_year: int =
                         elif isinstance(international_student_percent, list):
                             international_student_percent = international_student_percent[1]
                     else:
-                        print("[yellow][WARN][/yellow] Enrollment table not found")
+                        logger.warning("[yellow][WARN][/yellow] Enrollment table not found")
                         total_enrollment = None
                         undergrad_enrollment = None
                         grad_enrollment = None
@@ -254,7 +255,7 @@ async def run_pipeline(input_df: pd.DataFrame, output_path: str, min_year: int =
                             frame, "All Completers", year, table_selector=table_selector, value_selector=value_selector
                         )
                     else:
-                        print(f"[yellow][WARN][/yellow] completions table not found for {year}")
+                        logger.warning(f"[yellow][WARN][/yellow] completions table not found for {year}")
                         Bs = []
                         Ms = []
                         Phd = []
@@ -302,7 +303,7 @@ async def run_pipeline(input_df: pd.DataFrame, output_path: str, min_year: int =
                             else total_graduated_150_time
                         )
                     else:
-                        print(f"[yellow][WARN][/yellow] Graduation table not found for {year}")
+                        logger.warning(f"[yellow][WARN][/yellow] Graduation table not found for {year}")
                         graduation_rate_pct = []
                         total_graduated = []
                         total_graduated_150_time = []
@@ -391,7 +392,7 @@ async def run_pipeline(input_df: pd.DataFrame, output_path: str, min_year: int =
                         )
                         pct_awarded_pell_grant, avg_amount_awarded_pell_grant = federal_pell_grant_txt
                     else:
-                        print(f"[yellow][WARN][/yellow] Financial aid table not found for {year}")
+                        logger.warning(f"[yellow][WARN][/yellow] Financial aid table not found for {year}")
                         (
                             num_awarded_aid,
                             total_amount_awarded_aid,
@@ -460,7 +461,7 @@ async def run_pipeline(input_df: pd.DataFrame, output_path: str, min_year: int =
                         total_core_expense_per_fte = take_last(total_core_expense_per_fte)
                         num_fte_enrollment = take_last(num_fte_enrollment)
                     else:
-                        print(f"[yellow][WARN][/yellow] finance table not found for {year}")
+                        logger.warning(f"[yellow][WARN][/yellow] finance table not found for {year}")
                         tuition_revenue_per_fte = None
                         gov_grants_revenue_per_fte = None
                         private_revenue_per_fte = None
@@ -512,7 +513,7 @@ async def run_pipeline(input_df: pd.DataFrame, output_path: str, min_year: int =
                                 else management_occupation[-3]
                             )
                     else:
-                        print(f"[yellow][WARN][/yellow] Human resource page not found for {year}")
+                        logger.warning(f"[yellow][WARN][/yellow] Human resource page not found for {year}")
                         instruct_staff = []
                         academic_affairs = []
                         it_occupation = []
@@ -541,7 +542,7 @@ async def run_pipeline(input_df: pd.DataFrame, output_path: str, min_year: int =
                         else:
                             physical_item_circulation, digital_item_circulation = None, None
                     else:
-                        print(f"[yellow][WARN][/yellow] Library page not found for {year}")
+                        logger.warning(f"[yellow][WARN][/yellow] Library page not found for {year}")
                         physical_item_circulation, digital_item_circulation = None, None
 
                     library_data = {
@@ -571,5 +572,5 @@ async def run_pipeline(input_df: pd.DataFrame, output_path: str, min_year: int =
                     )
 
                 except Exception as e:
-                    print(f"[red][ERROR][/red] {name} {year}: {e}")
+                    logger.error(f"[red][ERROR][/red] {name} {year}: {e}")
                     traceback.print_exc()

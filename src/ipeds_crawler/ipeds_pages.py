@@ -5,10 +5,6 @@ Node = Union[Page, Frame]
 
 
 async def wait_frame_ready(frame: Node, timeout: int = 3_000) -> str | None:
-    """
-    Your anchor-based readiness check, preserved.
-    Returns the first selector that attached, or None.
-    """
     anchors = [
         "table.sc.survey-t input.sc-tbn",
         "div.facsimile_assets",
@@ -23,9 +19,6 @@ async def wait_frame_ready(frame: Node, timeout: int = 3_000) -> str | None:
 
 
 async def goto_reported_data(page: Page, unit_id: str | int, survey_num: int, year: int) -> Node:
-    """
-    Your improved goto_wrapper, returns a Page (direct iframe HTML) or a Frame (embedded).
-    """
     iframe_url = (
         f"https://nces.ed.gov/ipeds/reported-data/html/{unit_id}"
         f"?year={year}&surveyNumber={survey_num}&viewMode=iframe"

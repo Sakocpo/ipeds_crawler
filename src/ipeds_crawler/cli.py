@@ -2,16 +2,11 @@ import argparse
 import asyncio
 import pandas as pd
 from .orchestrator import run_pipeline
+from ipeds_crawler.logging import setup_logging
 
 
 def main() -> None:
-    """
-    Simple CLI wrapper. Stays close to your original interface:
-    - input CSV must contain INSTNM and UNITID columns.
-    - output CSV will be appended to (header written if the file doesn't exist).
-    - year range is fixed to 2023..2014 (inclusive) by default to match your script.
-      You can override with --min-year / --max-year.
-    """
+    setup_logging("INFO")
     parser = argparse.ArgumentParser(description="Run IPEDS crawler.")
     parser.add_argument("--input", required=True, help="Path to IPEDS HD CSV (with INSTNM, UNITID).")
     parser.add_argument("--output", required=True, help="Path to output CSV (append mode).")

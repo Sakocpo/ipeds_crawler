@@ -5,10 +5,6 @@ from playwright.async_api import async_playwright, Browser, Page
 
 @asynccontextmanager
 async def browser_page() -> AsyncIterator[Page]:
-    """
-    Launch Chromium with the same perf flags you used, block heavy resources,
-    and yield a single Page (no concurrency).
-    """
     async with async_playwright() as p:
         browser: Browser = await p.chromium.launch(
             headless=True,

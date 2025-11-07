@@ -1,8 +1,9 @@
 from typing import Any, List, Sequence
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from .normalize import normalize
+from ipeds_crawler.retry import retry_async
 
-
+@retry_async(retries=2, delay=2)
 async def wait_for_all(node, table_selector: str = "table#tbl4yearGradurate1.grid") -> bool:
     try:
         await node.locator(table_selector).first.wait_for(timeout=10_000)
@@ -22,15 +23,7 @@ async def safe_all_inner_texts(locator) -> List[str]:
         return []
 
 
-async def safe_get_text_data(frame, text: str, year: int, **kwargs) -> list:
-    try:
-        return await get_text_data(frame, text, year, **kwargs)
-    except PlaywrightTimeoutError:
-        return []
-    except Exception:
-        return []
-
-
+@retry_async(retries=2, delay=2)
 async def get_text_data(frame,text: str,year: int,table_selector: str | None = None,value_selector: str | None = None,table_header: str = "",exact: bool = False,) -> list | float | int | None:
     if table_selector is None or value_selector is None:
         if year >= 2023:
@@ -72,7 +65,7 @@ async def get_text_data(frame,text: str,year: int,table_selector: str | None = N
         return value
     return (value / 100.0) if "%" in text else value
 
-
+@retry_async(retries=2, delay=2)
 async def get_box_data(frame,text: str,year: int,table_selector: str | None = None,value_selector: str | None = None,num_box: int = 2,) -> list:
     if table_selector is None or value_selector is None:
         if year >= 2023:
