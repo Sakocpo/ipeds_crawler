@@ -1,5 +1,13 @@
 # IPEDS-Crawler
 
+<p align="center">
+  <a href="https://ipeds-website.vercel.app/"><img alt="Live Demo" src="https://img.shields.io/badge/Demo-Live-blue?logo=vercel"></a>
+  &nbsp;
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.10+-yellow">
+  &nbsp;
+  <img alt="Status" src="https://img.shields.io/badge/status-research%2Fdemo-green">
+</p>
+
 **IPEDS-Crawler** is an asynchronous Python scraper for the [U.S. Department of Education’s NCES / IPEDS](https://nces.ed.gov/ipeds/) “Reported Data” pages.  
 It automates collection of institutional-level statistics such as tuition, admissions, enrollment, completions, graduation rates, financial aid, finance, staffing, and library data across multiple academic years.
 
@@ -11,7 +19,6 @@ The project is built on modern Python tooling:
 - Pre-commit, Ruff, and Mypy for style and type safety
 
 ---
-
 ## 📦 Installation
 
 ### 1. Clone the repository
